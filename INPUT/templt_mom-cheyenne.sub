@@ -1,0 +1,70 @@
+#!/bin/bash
+### Job Name
+#PBS -N SWA14@EXP_NUM@
+#PBS -j oe
+#PBS -A URTG0034
+#PBS -l walltime=11:59:00
+#PBS -q economy
+### Select 20 nodes with 36 CPUs 
+#PBS -l select=20:ncpus=36:mpiprocs=36 
+### Send email on abort and end
+#PBS -m abe
+#PBS -M ncl60@scarletmail.rutgers.edu
+
+
+#set -x
+
+name='@EXP_NUM@'
+
+
+#-----------------------------------------------------------
+SUBMIT_HOME=/glade/work/nlaureanti/SWA14/runs/
+WORK_HOME=/glade/scratch/nlaureanti/SWA14/runs/
+#-----------------------------------------------------------
+
+source /glade/u/home/nlaureanti/modules.sh
+
+inputDataDir=$SUBMIT_HOME/exp.${name}/INPUT   # This is path to the directory that contains the input data
+expdir=$WORK_HOME/exp.${name}/
+
+mkdir $expdir
+
+cd $expdir
+rm -f *
+  cp $inputDataDir/input.nml .
+  cp $inputDataDir/data_table .
+  cp $inputDataDir/diag_table .
+  cp $inputDataDir/field_table .
+  cp $inputDataDir/SIS_* .
+  cp $inputDataDir/MOM_* .
+  cp $inputDataDir/SIS2* .
+
+ln -s $inputDataDir .
+
+
+executable=/glade/work/nlaureanti/mom6.exe
+cp $executable model.exe
+
+#------------------------------------------------------------------------------------
+# run the code
+#------------------------------------------------------------------------------------
+if [ ! -d RESTART ] ; then mkdir RESTART ; fi
+rm ocean.stats.nc
+
+set -x
+
+#   --- run the model ---
+      echo "---------- Begin of MOM6 simulation for $name experiment ----------"
+      date
+      mpiexec_mpt -np 533 $expdir/model.exe > fms.out
+      date
+      echo "------------------- end of MOM6 simulation ------------------------"
+      $SUBMIT_HOME/pplot_SWA_ic.py $expdir
+      $SUBMIT_HOME/pplot_SWA_5day.py $expdir
+
+
+
+echo end_of_run
+echo "NOTE: Natural end-of-script."
+
+exit 0

@@ -1,0 +1,77 @@
+#!/bin/bash
+### Job Name
+#SBATCH --open-mode=append
+#SBATCH -o /scratch/servicos/inpe2//nicole.laureanti//Modelos/work19931101.75hycom.rev603/set_mom_model.bull.14_1333.out.txt
+#SBATCH --nodes=2              #Numero de Nos
+#SBATCH --ntasks-per-node=40      #Numero de tarefas por No
+#SBATCH --ntasks=80            #Numero total de tarefas MPI
+#SBATCH -p processing                #Fila (partition) a ser utilizada
+#SBATCH -A inpe2                  # account
+#SBATCH -J BDE@EXP_NUM@                    #Nome job
+#SBATCH --time=18:00:00             #Tempo de fila
+#SBATCH --exclusive                    #Utilizacao exclusiva dos nos durante a execucao do job
+#SBATCH --no-requeue
+
+
+#on derecho####PBS -l select=20:ncpus=36:mpiprocs=36 
+module load openmpi/4.1.5/gcc/13.2.0
+module load netcdf-c-fortran/c-4.9.2-fortran-4.6.1
+module load hwloc/2.10.0
+module load OpenBLAS/0.3.25
+module load fftw3/3.3.10
+module list
+
+#set -x
+
+name='@EXP_NUM@'
+
+
+#-----------------------------------------------------------
+SUBMIT_HOME=/scratch/servicos/inpe2//nicole.laureanti/BDE28/
+WORK_HOME=/scratch/servicos/inpe2//nicole.laureanti/BDE28/
+#-----------------------------------------------------------
+
+#source /glade/u/home/nlaureanti/modules-cray.sh
+
+inputDataDir=$SUBMIT_HOME/exp.${name}/INPUT   # This is path to the directory that contains the input data
+expdir=$WORK_HOME/exp.${name}/
+
+mkdir $expdir
+
+cd $expdir
+rm -f *
+  cp $inputDataDir/input.nml .
+  cp $inputDataDir/data_table .
+  cp $inputDataDir/diag_table .
+  cp $inputDataDir/field_table .
+  cp $inputDataDir/SIS_* .
+  cp $inputDataDir/MOM_* .
+  cp $inputDataDir/SIS2* .
+
+ln -s $inputDataDir .
+
+
+executable=/scratch/servicos/inpe2//nicole.laureanti/MOM6
+cp $executable model.exe
+
+#------------------------------------------------------------------------------------
+# run the code
+#------------------------------------------------------------------------------------
+if [ ! -d RESTART ] ; then mkdir RESTART ; fi
+rm ocean.stats.nc
+
+set -x
+
+#   --- run the model ---
+      echo "---------- Begin of MOM6 simulation for $name experiment ----------"
+      date
+      time mpirun -np 57 $expdir/model.exe > fms.out
+      date
+      echo "------------------- end of MOM6 simulation ------------------------"
+
+
+
+echo end_of_run
+echo "NOTE: Natural end-of-script."
+
+exit 0

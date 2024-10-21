@@ -1,0 +1,5 @@
+20240918 125215.931 ERROR            PET0 ESMF_Array.F90:3907 ESMF_ArrayWrite Unable to write to file  - Internal subroutine call returned Error
+20240918 125216.049 ERROR            PET0 ESMF_IOScrip.F90:364 ESMF_OutputWeightFile Unable to write to file  - Internal subroutine call returned Error
+20240918 125216.049 ERROR            PET0 ESMF_IOScrip.F90:136 ESMF_SparseMatrixWrite Unable to write to file  - Internal subroutine call returned Error
+20240918 125216.049 ERROR            PET0 ESMF_Field_C.F90:1176 f_esmf_regridstorefile Unable to write to file  - Internal subroutine call returned Error
+20240918 125216.053 INFO             PET0 Finalizing ESMF
